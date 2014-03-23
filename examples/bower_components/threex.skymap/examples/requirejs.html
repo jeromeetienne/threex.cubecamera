@@ -1,87 +1,37 @@
 <!DOCTYPE html>
-<script src='vendor/three.js/build/three-min.js'></script>
+<script src='vendor/three.js/build/three.js'></script>
 <script src='vendor/require.js/require.js'></script>
-<script src='../threex.cubecamera.js'></script>
 <body style='margin: 0px; background-color: #bbbbbb; overflow: hidden;'><script>
-require([ 'bower_components/threex.skymap/package.require.js'
+require([ '../package.require.js'
 	], function(){
 	var renderer	= new THREE.WebGLRenderer();
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
-	var onRenderFcts= [];
+	var updateFcts	= [];
 	var scene	= new THREE.Scene();
 	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
 	camera.position.z = 3;
-
+	
 	//////////////////////////////////////////////////////////////////////////////////
-	//		default 3 points lightning					//
-	//////////////////////////////////////////////////////////////////////////////////
-
-	var ambientLight= new THREE.AmbientLight( 0x020202 )
-	scene.add( ambientLight)
-	var frontLight	= new THREE.DirectionalLight('white', 1)
-	frontLight.position.set(0.5, 0.5, 2)
-	scene.add( frontLight )
-	var backLight	= new THREE.DirectionalLight('white', 0.75)
-	backLight.position.set(-0.5, -0.5, -2)
-	scene.add( backLight )
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
+	//		add a skymap							//
 	//////////////////////////////////////////////////////////////////////////////////
 	
-	var mesh	= THREEx.createSkymap('skybox')
+	var mesh	= THREEx.createSkymap('mars')
 	scene.add( mesh )
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
-	//////////////////////////////////////////////////////////////////////////////////
-
-	var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
-	var material	= new THREE.MeshBasicMaterial({
-		color	: 'gold'
-	})
-	var mesh	= new THREE.Mesh(geometry, material)
-	scene.add( mesh )	
 	
-	onRenderFcts.push(function(delta, now){
-		var angle	= Math.PI*2*now * 0.2;
-		mesh.position.x	= Math.cos(angle)*0.2
-	})
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		create the mirror ball						//
-	//////////////////////////////////////////////////////////////////////////////////
-	var cubeCamera	= new THREEx.CubeCamera(mesh)
-	scene.add(cubeCamera.object3d)
-	onRenderFcts.push(function(delta, now){
-		cubeCamera.update(renderer, scene)
-	})
-
-	material.envMap	= cubeCamera.textureCube
-
 	//////////////////////////////////////////////////////////////////////////////////
 	//		add an object and make it move					//
 	//////////////////////////////////////////////////////////////////////////////////	
-;(function(){
-	var container	= new THREE.Object3D
-	var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
+	var geometry	= new THREE.CubeGeometry( 1, 1, 1);
 	var material	= new THREE.MeshNormalMaterial();
-	var nObjects	= 8;
-	for(var i = 0; i < nObjects; i++){
-		var mesh	= new THREE.Mesh( geometry, material );
-		mesh.position.x	= Math.cos(i/nObjects * Math.PI*2)*2
-		mesh.position.z	= Math.sin(i/nObjects * Math.PI*2)*2
-		container.add( mesh );		
-	}
-	scene.add(container)
-	onRenderFcts.push(function(delta, now){
-		var angle	= 0.1 * now * Math.PI*2
-		container.rotation.y	= angle
+	var mesh	= new THREE.Mesh( geometry, material );
+	scene.add(mesh);
+	updateFcts.push(function(delta, now){
+		mesh.rotation.x += 1 * delta;
+		mesh.rotation.y += 0.01;		
 	})
-})()
-
+	
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Camera Controls							//
 	//////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +40,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 		mouse.x	= (event.clientX / window.innerWidth ) - 0.5
 		mouse.y	= (event.clientY / window.innerHeight) - 0.5
 	}, false)
-	onRenderFcts.push(function(delta, now){
+	updateFcts.push(function(delta, now){
 		camera.position.x += (mouse.x*5 - camera.position.x) * (delta*3)
 		camera.position.y += (mouse.y*5 - camera.position.y) * (delta*3)
 		camera.lookAt( scene.position )
@@ -100,7 +50,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	//////////////////////////////////////////////////////////////////////////////////
 	//		render the scene						//
 	//////////////////////////////////////////////////////////////////////////////////
-	onRenderFcts.push(function(){
+	updateFcts.push(function(){
 		renderer.render( scene, camera );		
 	})
 	
@@ -116,7 +66,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
 		lastTimeMsec	= nowMsec
 		// call each update function
-		onRenderFcts.forEach(function(updateFn){
+		updateFcts.forEach(function(updateFn){
 			updateFn(deltaMsec/1000, nowMsec/1000)
 		})
 	})

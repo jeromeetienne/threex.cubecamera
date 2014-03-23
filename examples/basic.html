@@ -1,33 +1,62 @@
 <!DOCTYPE html>
-<script src='../../../vendor/three.js/build/three.min.js'></script>
-<script src='../threex.mirrorball.js'></script>
+<script src='vendor/three.js/build/three-min.js'></script>
+<script src='../threex.cubecamera.js'></script>
 <body style='margin: 0px; background-color: #bbbbbb; overflow: hidden;'><script>
 	var renderer	= new THREE.WebGLRenderer();
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
-	var updateFcts	= [];
+	renderer.setClearColor( new THREE.Color('#bbbbbb'), 1 );
+
+	var onRenderFcts= [];
 	var scene	= new THREE.Scene();
 	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100 );
 	camera.position.z = 3;
 
-	var light	= new THREE.AmbientLight( 0x444444 )
-	scene.add( light )
-	var light	= new THREE.DirectionalLight( 0xcccccc, 1 )
-	scene.add( light )
+	//////////////////////////////////////////////////////////////////////////////////
+	//		default 3 points lightning					//
+	//////////////////////////////////////////////////////////////////////////////////
+
+	var ambientLight= new THREE.AmbientLight( 0x020202 )
+	scene.add( ambientLight)
+	var frontLight	= new THREE.DirectionalLight('white', 1)
+	frontLight.position.set(0.5, 0.5, 2)
+	scene.add( frontLight )
+	var backLight	= new THREE.DirectionalLight('white', 0.75)
+	backLight.position.set(-0.5, -0.5, -2)
+	scene.add( backLight )
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		comment								//
+	//////////////////////////////////////////////////////////////////////////////////
+
+	var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
+	var material	= new THREE.MeshBasicMaterial({
+		// color	: 'gold'
+	})
+	var mesh	= new THREE.Mesh(geometry, material)
+	scene.add( mesh )	
+	
+	onRenderFcts.push(function(delta, now){
+		var angle	= Math.PI*2*now * 0.2;
+		mesh.position.x	= Math.cos(angle)*1
+	})
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		create the mirror ball						//
 	//////////////////////////////////////////////////////////////////////////////////
-	var mirrorBall	= new THREEx.MirrorBall(512)
-	scene.add(mirrorBall.object3d)
-	updateFcts.push(function(delta, now){
-		mirrorBall.update(renderer, scene)
+	var cubeCamera	= new THREEx.CubeCamera(mesh)
+	scene.add(cubeCamera.object3d)
+	onRenderFcts.push(function(delta, now){
+		cubeCamera.update(renderer, scene)
 	})
+
+	material.envMap	= cubeCamera.textureCube
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		add an object and make it move					//
 	//////////////////////////////////////////////////////////////////////////////////	
+;(function(){
 	var container	= new THREE.Object3D
 	var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
 	var material	= new THREE.MeshNormalMaterial();
@@ -39,10 +68,11 @@
 		container.add( mesh );		
 	}
 	scene.add(container)
-	updateFcts.push(function(delta, now){
-		var angle	= 0.2 * now * Math.PI*2
-		container.rotation.y	= angle
-	})
+	// onRenderFcts.push(function(delta, now){
+	// 	var angle	= 0.2 * now * Math.PI*2
+	// 	container.rotation.y	= angle
+	// })
+})()
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Camera Controls							//
@@ -52,7 +82,7 @@
 		mouse.x	= (event.clientX / window.innerWidth ) - 0.5
 		mouse.y	= (event.clientY / window.innerHeight) - 0.5
 	}, false)
-	updateFcts.push(function(delta, now){
+	onRenderFcts.push(function(delta, now){
 		camera.position.x += (mouse.x*5 - camera.position.x) * (delta*3)
 		camera.position.y += (mouse.y*5 - camera.position.y) * (delta*3)
 		camera.lookAt( scene.position )
@@ -62,7 +92,7 @@
 	//////////////////////////////////////////////////////////////////////////////////
 	//		render the scene						//
 	//////////////////////////////////////////////////////////////////////////////////
-	updateFcts.push(function(){
+	onRenderFcts.push(function(){
 		renderer.render( scene, camera );		
 	})
 	
@@ -78,7 +108,7 @@
 		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
 		lastTimeMsec	= nowMsec
 		// call each update function
-		updateFcts.forEach(function(updateFn){
+		onRenderFcts.forEach(function(updateFn){
 			updateFn(deltaMsec/1000, nowMsec/1000)
 		})
 	})
