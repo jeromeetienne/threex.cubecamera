@@ -10,7 +10,14 @@ Show Don't Tell
 ===============
 * [examples/basic.html](http://jeromeetienne.github.io/threex.cubecamera/examples/basic.html)
 \[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/basic.html)\] :
-It shows this feature, and that one which is coded like that.
+It shows the most basic usage of this extension.
+* [examples/demo.html](http://jeromeetienne.github.io/threex.cubecamera/examples/demo.html)
+\[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/demo.html)\] :
+It shows a little bit shinier demo.
+* [examples/discoball.html](http://jeromeetienne.github.io/threex.cubecamera/examples/discoball.html)
+\[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/discoball.html)\] :
+It shows a little bit shinier discoball. 
+TODO to port in its own demo. use the "minecraft goes party" from nextgamefrontier talk
 
 How To Install It
 =================
@@ -26,6 +33,7 @@ Or you can install with [bower](http://bower.io/), as you wish.
 ```bash
 bower install threex.cubecamera
 ```
+
 
 How To Use It
 =============
