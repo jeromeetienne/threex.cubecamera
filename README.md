@@ -16,8 +16,14 @@ It shows the most basic usage of this extension.
 It shows a little bit shinier demo.
 * [examples/discoball.html](http://jeromeetienne.github.io/threex.cubecamera/examples/discoball.html)
 \[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/discoball.html)\] :
-It shows a little bit shinier discoball. 
-TODO to port in its own demo. use the "minecraft goes party" from nextgamefrontier talk
+It shows a little bit shinier discoball.
+TODO to port in its own demo.
+It doesnt even use live rendering.
+Use the "minecraft goes party" from nextgamefrontier talk.
+
+A Screenshot
+============
+[![screenshot](https://raw.githubusercontent.com/jeromeetienne/threex.cubecamera/master/examples/images/screenshot-threex-cubecamera-512x512.jpg)](http://jeromeetienne.github.io/threex.cubecamera/examples/demo.html)
 
 How To Install It
 =================
