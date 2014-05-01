@@ -1,10 +1,7 @@
 threex.cubecamera
 =============
 
-threex.cubecamera is a three.js extension which provide an helper for cube cameras.
-It is very usefull when a given object must reflect a texture cube live.
-Be carefull, this require 6 rendering of the scene everytime you update it.
-It becomes expensive fast.
+threex.cubecamera is a [three.js games extension](http://www.threejsgames.com/extensions/) which provides a helper for cube cameras. It is very useful when a given object must reflect a texture cube live. Just look at it, you can see the reflection as clear as a real life mirror! You can give your texture the color you want, for example in the demo I created a "gold" sphere to give it a shinier look. Be careful though, this requires 6 renderings of the scene every time you update it. It becomes expensive fast. 
 
 Show Don't Tell
 ===============
