@@ -12,7 +12,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	document.body.appendChild( renderer.domElement );
 
         renderer.shadowMapEnabled	= true;
-// 
+
 	var onRenderFcts= [];
 	var scene	= new THREE.Scene();
 	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
@@ -108,7 +108,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 		var threshold	= 0.5
 		var currentY	= Math.abs(Math.sin(angle))
 		var ratio	= (threshold-currentY)/threshold
-
+		// TODO invalid formula
 		if( currentY < threshold ){
 			object3d.scale.y	= 0.7 + 0.3 * (1-ratio)
 		}else{
@@ -142,12 +142,13 @@ require([ 'bower_components/threex.skymap/package.require.js'
 			})
 			var object3d	= new THREE.Mesh(geometry, material)
 			scene.add( object3d )
-			object3d.castShadow	= false
+			object3d.castShadow	= true
 			object3d.receiveShadow	= false
 
-			// create cubeCamera
+			// pseudo LOD on textureW
 			var textureW	= 64
 			if( i === 1 || i === 2 || i === 3 ) textureW	= 256
+			// create cubeCamera
 			var cubeCamera	= new THREEx.CubeCamera(object3d, textureW)
 			material.envMap	= cubeCamera.textureCube
 			scene.add(cubeCamera.object3d)
