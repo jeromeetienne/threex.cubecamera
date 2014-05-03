@@ -39,41 +39,95 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	//		comment								//
 	//////////////////////////////////////////////////////////////////////////////////
 
+;(function(){
 	var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
 	var material	= new THREE.MeshBasicMaterial({
 		color	: 'gold'
 	})
-	var mesh	= new THREE.Mesh(geometry, material)
-	scene.add( mesh )	
-	
+	var object3d	= new THREE.Mesh(geometry, material)
+	scene.add( object3d )
+	object3d.position.y	= 0.5
 	onRenderFcts.push(function(delta, now){
-		var angle	= Math.PI*2*now * 0.2;
-		mesh.position.x	= Math.cos(angle)*0.5
+		var angle	= Math.PI*2*now*0.4
+		var position	= object3d.position
+		position.y	= 0.5 + Math.abs(Math.sin(angle))
 	})
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		create the mirror ball						//
+	//////////////////////////////////////////////////////////////////////////////////
+	var cubeCamera	= new THREEx.CubeCamera(object3d)
+	scene.add(cubeCamera.object3d)
+	onRenderFcts.push(function(delta, now){
+		cubeCamera.update(renderer, scene)
+	})
+
+	material.envMap	= cubeCamera.textureCube
+})()
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		comment								//
 	//////////////////////////////////////////////////////////////////////////////////
 
 ;(function(){
+	for(var i = 0; i < 8; i ++){
+		;(function(){
+			// create sphere
+			var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
+			var material	= new THREE.MeshBasicMaterial({
+				color	: 'gold'
+			})
+			var object3d	= new THREE.Mesh(geometry, material)
+			scene.add( object3d )
+
+			// create cubeCamera
+			var cubeCamera	= new THREEx.CubeCamera(object3d, 256)
+			material.envMap	= cubeCamera.textureCube
+			scene.add(cubeCamera.object3d)
+			onRenderFcts.push(function(delta, now){
+				cubeCamera.update(renderer, scene)
+			})
+
+
+			// set position
+			var radius	= 2.5; 
+			var angle	= Math.PI*2 * i/8
+			var position	= object3d.position;
+			position.x	= Math.cos(angle)*radius
+			position.y	= 0.5
+			position.z	= Math.sin(angle)*radius
+		})()
+	}
+})()
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		comment								//
+	//////////////////////////////////////////////////////////////////////////////////
+
+;(function(){
+	var skinNames	= ['jetienne', 'mario', 'batman']
 	for(var i = 0; i < 3; i ++){
 		;(function(){
 			var character	= new THREEx.MinecraftChar()
 			scene.add(character.root)
-			character.loadWellKnownSkin('mario')
+
+			var skinName	= skinNames[i]
+			character.loadWellKnownSkin(skinName)
 			//
 			var object3d	= character.root
 			var position	= object3d.position;
 			// var rotation	= character.root.rotation;
-			var radius	= 1;
+			var radius	= 1.3; 
 			var angle	= Math.PI*2 * i/3
+			object3d.rotateY(Math.PI-angle)
 			onRenderFcts.push(function(delta, now){
-				var delta	= -0.1 * Math.PI*2*delta
+				var delta	= -0.15 * Math.PI*2*delta
 				angle		+= delta
 				position.x	= Math.cos(angle)*radius
 				position.z	= Math.sin(angle)*radius
 
-				object3d.rotateY(delta)
+				object3d.rotateY(-delta)
 			})
 
 			// init bodyAnims
@@ -88,38 +142,6 @@ require([ 'bower_components/threex.skymap/package.require.js'
 })()
 
 	//////////////////////////////////////////////////////////////////////////////////
-	//		create the mirror ball						//
-	//////////////////////////////////////////////////////////////////////////////////
-	var cubeCamera	= new THREEx.CubeCamera(mesh)
-	scene.add(cubeCamera.object3d)
-	onRenderFcts.push(function(delta, now){
-		cubeCamera.update(renderer, scene)
-	})
-
-	material.envMap	= cubeCamera.textureCube
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		add an object and make it move					//
-	//////////////////////////////////////////////////////////////////////////////////	
-;(function(){
-	var container	= new THREE.Object3D
-	var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
-	var material	= new THREE.MeshNormalMaterial();
-	var nObjects	= 8;
-	for(var i = 0; i < nObjects; i++){
-		var mesh	= new THREE.Mesh( geometry, material );
-		mesh.position.x	= Math.cos(i/nObjects * Math.PI*2)*2
-		mesh.position.z	= Math.sin(i/nObjects * Math.PI*2)*2
-		container.add( mesh );		
-	}
-	scene.add(container)
-	onRenderFcts.push(function(delta, now){
-		var angle	= 0.1 * now * Math.PI*2
-		container.rotation.y	= angle
-	})
-})()
-
-	//////////////////////////////////////////////////////////////////////////////////
 	//		Camera Controls							//
 	//////////////////////////////////////////////////////////////////////////////////
 	var mouse	= {x : 0, y : 0}
@@ -129,10 +151,11 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	}, false)
 	onRenderFcts.push(function(delta, now){
 		camera.position.x += (mouse.x*5 - camera.position.x) * (delta*3)
-		camera.position.y += (mouse.y*5 - camera.position.y) * (delta*3)
-		camera.lookAt( scene.position )
-	})
+		camera.position.y += (mouse.y*5 + 2 - camera.position.y) * (delta*3)
 
+		var target	= new THREE.Vector3(0,0,0)
+		camera.lookAt( target )
+	})
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		render the scene						//
