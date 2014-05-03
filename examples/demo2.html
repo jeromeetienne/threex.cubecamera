@@ -5,6 +5,7 @@
 <body style='margin: 0px; background-color: #bbbbbb; overflow: hidden;'><script>
 require([ 'bower_components/threex.skymap/package.require.js'
 	, 'bower_components/threex.minecraft/package.require.js'
+	, 'bower_components/threex.checkerboard/package.require.js'
 	], function(){
 	var renderer	= new THREE.WebGLRenderer();
 	renderer.setSize( window.innerWidth, window.innerHeight );
@@ -29,12 +30,29 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	scene.add( backLight )
 
 	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
+	//		skymap								//
 	//////////////////////////////////////////////////////////////////////////////////
 	
 	var mesh	= THREEx.createSkymap('mars')
 	scene.add( mesh )
 
+	//////////////////////////////////////////////////////////////////////////////////
+	//		checkerboard							//
+	//////////////////////////////////////////////////////////////////////////////////
+	
+	var mesh	= new THREEx.CheckerBoard(32,32, 32,32)
+	scene.add(mesh)
+	var materialEven= new THREE.MeshPhongMaterial({
+		emissive	: 'white'
+	})
+	mesh.material.materials[0]	= materialEven
+	var materialOdd	= new THREE.MeshPhongMaterial({
+		emissive	: 'black'
+	})
+	mesh.material.materials[1]	= materialOdd
+
+window.materialEven	= materialEven
+window.materialOdd	= materialOdd
 	//////////////////////////////////////////////////////////////////////////////////
 	//		comment								//
 	//////////////////////////////////////////////////////////////////////////////////
