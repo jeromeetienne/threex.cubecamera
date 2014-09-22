@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<script src='vendor/three.js/build/three-min.js'></script>
+<script src='vendor/three-r67.js/build/three.min.js'></script>
 <script src='vendor/require.js/require.js'></script>
 <script src='../threex.cubecamera.js'></script>
+<div style='position: absolute; text-align: center; width: 100%;'>
+	Save the output of a cubeCamera into an image - bake it
+	<br/>
+	<a href="javascript:saveOutput();">save in splitted png</a>
+	/
+	<a href="javascript:saveOutput('hCross', 'image/webp');">save in hCross webp</a>
+</div>
 <body style='margin: 0px; background-color: #bbbbbb; overflow: hidden;'><script>
 require([ 'bower_components/threex.skymap/package.require.js'
 	], function(){
-	var renderer	= new THREE.WebGLRenderer();
+	var renderer	= new THREE.WebGLRenderer({
+		antialias		: true,
+		preserveDrawingBuffer	: true,
+	});
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
@@ -15,27 +25,14 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	camera.position.z = 3;
 
 	//////////////////////////////////////////////////////////////////////////////////
-	//		default 3 points lightning					//
-	//////////////////////////////////////////////////////////////////////////////////
-
-	var ambientLight= new THREE.AmbientLight( 0x020202 )
-	scene.add( ambientLight)
-	var frontLight	= new THREE.DirectionalLight('white', 1)
-	frontLight.position.set(0.5, 0.5, 2)
-	scene.add( frontLight )
-	var backLight	= new THREE.DirectionalLight('white', 0.75)
-	backLight.position.set(-0.5, -0.5, -2)
-	scene.add( backLight )
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
+	//		add a skybox
 	//////////////////////////////////////////////////////////////////////////////////
 	
 	var mesh	= THREEx.createSkymap('skybox')
 	scene.add( mesh )
 
 	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
+	//		create the central mirror ball
 	//////////////////////////////////////////////////////////////////////////////////
 
 	var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
@@ -62,26 +59,55 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	material.envMap	= cubeCamera.textureCube
 
 	//////////////////////////////////////////////////////////////////////////////////
-	//		add an object and make it move					//
+	//		create torus and make them turn
 	//////////////////////////////////////////////////////////////////////////////////	
-;(function(){
-	var container	= new THREE.Object3D
-	var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
-	var material	= new THREE.MeshNormalMaterial();
-	var nObjects	= 8;
-	for(var i = 0; i < nObjects; i++){
-		var mesh	= new THREE.Mesh( geometry, material );
-		mesh.position.x	= Math.cos(i/nObjects * Math.PI*2)*2
-		mesh.position.z	= Math.sin(i/nObjects * Math.PI*2)*2
-		container.add( mesh );		
-	}
-	scene.add(container)
-	onRenderFcts.push(function(delta, now){
-		var angle	= 0.1 * now * Math.PI*2
-		container.rotation.y	= angle
-	})
-})()
+	;(function(){
+		var container	= new THREE.Object3D
+		var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
+		var material	= new THREE.MeshNormalMaterial();
+		var nObjects	= 8;
+		for(var i = 0; i < nObjects; i++){
+			var mesh	= new THREE.Mesh( geometry, material );
+			mesh.position.x	= Math.cos(i/nObjects * Math.PI*2)*2
+			mesh.position.z	= Math.sin(i/nObjects * Math.PI*2)*2
+			container.add( mesh );		
+		}
+		scene.add(container)
+		onRenderFcts.push(function(delta, now){
+			var angle	= 0.1 * now * Math.PI*2
+			container.rotation.y	= angle
+		})
+	})()
 
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Comment								//
+	//////////////////////////////////////////////////////////////////////////////////
+	function saveOutput(type, imageFormat, imageQuality){
+		// default arguments
+		type	= type	|| 'splitted'
+		// get the images from the cubeCamera
+		var images	= THREEx.CubeCamera.toImages(cubeCamera.camera, renderer)
+
+		// open a new window with cubeTexture in horizontal cross format
+		if( type === 'hCross' ){
+			var canvas	= THREEx.CubeTextureHCross.build(images)
+			var url		= canvas.toDataURL(imageFormat, imageQuality)
+			window.open(url)			
+			console.log('url length', url.length)	
+		}else if( type === 'splitted'){
+			// open a new window with cubeTexture for each images
+			var urlsLength	= 0
+			images.forEach(function(canvas, index){
+				var url		= canvas.toDataURL(imageFormat, imageQuality)
+				urlsLength	+= url.length
+				window.open(url, 'image '+index);			
+			})
+			console.log('urlsLength', urlsLength)	
+		}else	console.assert(false)
+	}
+	window.saveOutput	= saveOutput
+		
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Camera Controls							//
 	//////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +126,7 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	//////////////////////////////////////////////////////////////////////////////////
 	//		render the scene						//
 	//////////////////////////////////////////////////////////////////////////////////
-	onRenderFcts.push(function(){
+	onRenderFcts.push(function(){		
 		renderer.render( scene, camera );		
 	})
 	
@@ -122,3 +148,4 @@ require([ 'bower_components/threex.skymap/package.require.js'
 	})
 })
 </script></body>
+
