@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<script src='vendor/three-r67.js/build/three.min.js'></script>
+<script src='vendor/require.js/require.js'></script>
+<script src='../threex.cubecamera.js'></script>
+<div style='position: absolute; text-align: center; width: 100%;'>
+	Save the output of a cubeCamera into an image - bake it
+	<br/>
+	<a href="javascript:saveOutput();">save in splitted png</a>
+	/
+	<a href="javascript:saveOutput('hCross', 'image/webp');">save in hCross webp</a>
+	/
+	<a href="javascript:saveOutput('hCross', 'image/jpg');">save in hCross jpg</a>
+</div>
+<body style='margin: 0px; background-color: #bbbbbb; overflow: hidden;'><script>
+require([ 'bower_components/threex.skymap/package.require.js'
+	], function(){
+	var renderer	= new THREE.WebGLRenderer({
+		antialias		: true,
+		preserveDrawingBuffer	: true,
+	});
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	var onRenderFcts= [];
+	var scene	= new THREE.Scene();
+	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
+	camera.position.z = 3;
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		add a skybox
+	//////////////////////////////////////////////////////////////////////////////////
+	
+	var mesh	= THREEx.createSkymap('skybox')
+	scene.add( mesh )
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		create the central mirror ball
+	//////////////////////////////////////////////////////////////////////////////////
+
+	var geometry	= new THREE.SphereGeometry(0.5, 32, 16)
+	var material	= new THREE.MeshBasicMaterial({
+		color	: 'gold'
+	})
+	var mesh	= new THREE.Mesh(geometry, material)
+	scene.add( mesh )	
+	
+	onRenderFcts.push(function(delta, now){
+		var angle	= Math.PI*2*now * 0.2;
+		mesh.position.x	= Math.cos(angle)*0.5
+	})
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		create the mirror ball						//
+	//////////////////////////////////////////////////////////////////////////////////
+	var cubeCamera	= new THREEx.CubeCamera(mesh)
+	scene.add(cubeCamera.object3d)
+	onRenderFcts.push(function(delta, now){
+		cubeCamera.update(renderer, scene)
+	})
+
+	material.envMap	= cubeCamera.textureCube
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		create torus and make them turn
+	//////////////////////////////////////////////////////////////////////////////////	
+	;(function(){
+		var container	= new THREE.Object3D
+		var geometry	= new THREE.TorusKnotGeometry(0.27, 0.1, 128, 32)
+		var material	= new THREE.MeshNormalMaterial();
+		var nObjects	= 8;
+		for(var i = 0; i < nObjects; i++){
+			var mesh	= new THREE.Mesh( geometry, material );
+			mesh.position.x	= Math.cos(i/nObjects * Math.PI*2)*2
+			mesh.position.z	= Math.sin(i/nObjects * Math.PI*2)*2
+			container.add( mesh );		
+		}
+		scene.add(container)
+		onRenderFcts.push(function(delta, now){
+			var angle	= 0.1 * now * Math.PI*2
+			container.rotation.y	= angle
+		})
+	})()
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Comment								//
+	//////////////////////////////////////////////////////////////////////////////////
+	function saveOutput(type, imageFormat, imageQuality){
+		// default arguments
+		type	= type	|| 'splitted'
+		// get the images from the cubeCamera
+		var images	= THREEx.CubeCamera.toImages(cubeCamera.camera, renderer)
+
+		// open a new window with cubeTexture in horizontal cross format
+		if( type === 'hCross' ){
+			var canvas	= THREEx.CubeTextureHCross.build(images)
+			var url		= canvas.toDataURL(imageFormat, imageQuality)
+			window.open(url)			
+			console.log('url length', url.length)	
+		}else if( type === 'splitted'){
+			// open a new window with cubeTexture for each images
+			var urlsLength	= 0
+			images.forEach(function(canvas, index){
+				var url		= canvas.toDataURL(imageFormat, imageQuality)
+				urlsLength	+= url.length
+				window.open(url, 'image '+index);			
+			})
+			console.log('urlsLength', urlsLength)	
+		}else	console.assert(false)
+	}
+	window.saveOutput	= saveOutput
+		
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Camera Controls							//
+	//////////////////////////////////////////////////////////////////////////////////
+	var mouse	= {x : 0, y : 0}
+	document.addEventListener('mousemove', function(event){
+		mouse.x	= (event.clientX / window.innerWidth ) - 0.5
+		mouse.y	= (event.clientY / window.innerHeight) - 0.5
+	}, false)
+	onRenderFcts.push(function(delta, now){
+		camera.position.x += (mouse.x*5 - camera.position.x) * (delta*3)
+		camera.position.y += (mouse.y*5 - camera.position.y) * (delta*3)
+		camera.lookAt( scene.position )
+	})
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		render the scene						//
+	//////////////////////////////////////////////////////////////////////////////////
+	onRenderFcts.push(function(){		
+		renderer.render( scene, camera );		
+	})
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//		loop runner							//
+	//////////////////////////////////////////////////////////////////////////////////
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){
+		// keep looping
+		requestAnimationFrame( animate );
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		onRenderFcts.forEach(function(updateFn){
+			updateFn(deltaMsec/1000, nowMsec/1000)
+		})
+	})
+})
+</script></body>
+
