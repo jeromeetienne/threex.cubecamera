@@ -11,6 +11,10 @@ It shows the most basic usage of this extension.
 * [examples/demo.html](http://jeromeetienne.github.io/threex.cubecamera/examples/demo.html)
 \[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/demo.html)\] :
 It shows a little bit shinier demo.
+* [examples/saveOutput.html](http://jeromeetienne.github.io/threex.cubecamera/examples/saveOutput.html)
+\[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/saveOutput.html)\] :
+It shows how to save the output of a cube camera. Thus you can bake your
+cube camera and reuse it later. It is nice if precomputation is possible.
 * [examples/discoball.html](http://jeromeetienne.github.io/threex.cubecamera/examples/discoball.html)
 \[[view source](https://github.com/jeromeetienne/threex.cubecamera/blob/master/examples/discoball.html)\] :
 It shows a little bit shinier discoball.
@@ -75,5 +79,15 @@ material.envMap	= cubeCamera.textureCube
 
 This is it! Now you got the live texture cube on your sphere :)
 
+## How to bake the cube camera into a cube map for later?
+For that use the following function
+
+```
+// get the images from the THREE.CubeCamera
+var images  = THREEx.CubeCamera.toImages(cubeCamera, renderer)
+```
+
+It will output an array of 6 images in three.js order (px,nx,py,ny,pz,nz).
+You can reuse those directly in a cube camera.
 
 

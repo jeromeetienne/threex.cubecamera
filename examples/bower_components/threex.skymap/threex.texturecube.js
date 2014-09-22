@@ -35,7 +35,7 @@ THREEx.TextureCube.baseUrl	= "../";
 THREEx.TextureCube.createUrls	= function(basename, format, rootUrl, posPrefix, negPrefix){
 	posPrefix	= posPrefix || "p";
 	negPrefix	= negPrefix || "n";
-	var path	= rootUrl + "/" + basename + "/";
+	var path	= rootUrl + basename + "/";
 	var urls	= [
 		path + posPrefix + 'x' + format, path + negPrefix + 'x' + format,
 		path + posPrefix + 'y' + format, path + negPrefix + 'y' + format,
